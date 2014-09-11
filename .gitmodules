@@ -1,0 +1,3 @@
+[submodule "Telerik.JustMock"]
+	path = Telerik.JustMock
+	url = https://github.com/telerik/JustMockLite
