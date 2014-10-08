@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>JustMock.Mef</id>
+    <version>1.0.0</version>
+    <authors>dragnev</authors>
+    <owners>dragnev</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>https://github.com/tailsu/Telerik.JustMock.Mef</projectUrl>
+    <iconUrl>http://www.telerik.com/sfimages/default-source/logos/jm_32x32.png?sfvrsn=2</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Export provider and mocking container for unit-testing MEF-based projects.</description>
+    <copyright>Copyright 2014</copyright>
+    <tags>justmock mef</tags>
+    <dependencies>
+      <dependency id="JustMock" version="1.0" />
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="Telerik.JustMock.Mef\bin\Release\Telerik.JustMock.dll" target="lib/Net40"/>
+  </files>
+</package>

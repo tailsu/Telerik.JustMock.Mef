@@ -10,7 +10,7 @@ namespace Telerik.JustMock.Mef
 		public MockingCompositionContainer(string contractName = null)
 		{
 			this.contractName = contractName;
-			this.instance = new Lazy<T>(() => base.Compose<T>(this.contractName));
+			this.instance = new Lazy<T>(() => base.Compose<T>(this.contractName), isThreadSafe: true);
 		}
 
 		public T Instance

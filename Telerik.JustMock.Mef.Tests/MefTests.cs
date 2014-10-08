@@ -16,7 +16,7 @@ namespace Telerik.JustMock.Mef.Tests
 			var mocker = new MockingCompositionContainer<Greeter>();
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).DoInstead((string log) => msg = log);
 			mocker.Arrange<IMessage>(message => message.Message).Returns("foo");
-			mocker.Arrange<ICounter>();
+			mocker.ImportMock<ICounter>();
 			var greeter = mocker.Instance;
 
 			greeter.Greet();
@@ -34,7 +34,7 @@ namespace Telerik.JustMock.Mef.Tests
 			var mocker = new MockExportProvider();
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).DoInstead((string log) => msg = log);
 			mocker.Arrange<IMessage>(message => message.Message).Returns("foo");
-			mocker.Arrange<ICounter>();
+			mocker.ImportMock<ICounter>();
 			var greeter = mocker.Compose<Greeter>();
 
 			greeter.Greet();
@@ -43,27 +43,18 @@ namespace Telerik.JustMock.Mef.Tests
 		}
 
 		[TestMethod]
-		public void ShouldRespectContractNames()
-		{
-			var mocker = new MockExportProvider();
-			mocker.Arrange<IMessage>("msg", msg => msg.Message).Returns("yep");
-			var reader = mocker.Compose<MessageReader>("reader");
-			Assert.AreEqual("yep", reader.Message);
-		}
-
-		[TestMethod]
 		public void ShouldAssertExpectationsOnAllMocks()
 		{
 			var mocker = new MockExportProvider();
-			mocker.Arrange<IMessage>();
+			mocker.ImportMock<IMessage>();
 			mocker.Arrange<ICounter>(counter => counter.Next).Returns(5);
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).MustBeCalled();
 
 			AssertEx.Throws<AssertFailedException>(() => mocker.Assert());
 			AssertEx.Throws<AssertFailedException>(() => mocker.AssertAll());
 			AssertEx.Throws<AssertFailedException>(() => mocker.Assert<ILogger>());
-			mocker.Arrange<ICounter>().Assert();
-			AssertEx.Throws<AssertFailedException>(() => mocker.Arrange<ICounter>().AssertAll());
+			mocker.ImportMock<ICounter>().Assert();
+			AssertEx.Throws<AssertFailedException>(() => mocker.ImportMock<ICounter>().AssertAll());
 
 			var greeter = mocker.Compose<Greeter>();
 			greeter.Greet();
@@ -71,8 +62,8 @@ namespace Telerik.JustMock.Mef.Tests
 			mocker.Assert();
 			mocker.AssertAll();
 			mocker.Assert<ILogger>();
-			mocker.Arrange<ICounter>().Assert();
-			mocker.Arrange<ICounter>().AssertAll();
+			mocker.ImportMock<ICounter>().Assert();
+			mocker.ImportMock<ICounter>().AssertAll();
 		}
 
 		[TestMethod]
@@ -81,66 +72,50 @@ namespace Telerik.JustMock.Mef.Tests
 			var assemblyCatalog = new AssemblyCatalog(typeof(MefTests).Assembly);
 
 			var mocks = new MockExportProvider();
-			mocks.Arrange<ILogger>();
-			mocks.Arrange<IMessage>();
-			mocks.Arrange<ICounter>();
+			mocks.ImportMock<ILogger>();
+			mocks.ImportMock<IMessage>();
+			mocks.ImportMock<ICounter>();
 
 			var container = new CompositionContainer(assemblyCatalog, mocks);
 			var greeter = container.GetExportedValue<Greeter>();
 			greeter.Greet();
 		}
-	}
 
-	public interface ILogger
-	{
-		void Log(string message);
-	}
-
-	public interface IMessage
-	{
-		string Message { get; }
-	}
-
-	public interface ICounter
-	{
-		int Next { get; }
-	}
-
-	[Export]
-	public class Greeter
-	{
-		private ILogger logger;
-		private IMessage message;
-		private ICounter counter;
-
-		[ImportingConstructor]
-		public Greeter(ILogger logger, IMessage message, ICounter counter)
+		public interface ILogger
 		{
-			this.logger = logger;
-			this.message = message;
-			this.counter = counter;
+			void Log(string message);
 		}
 
-		public void Greet()
+		public interface IMessage
 		{
-			this.logger.Log(string.Format("{0}: {1}", this.counter.Next, this.message.Message));
-		}
-	}
-
-	[Export("reader")]
-	public class MessageReader
-	{
-		private IMessage message;
-
-		[ImportingConstructor]
-		public MessageReader([Import("msg")] IMessage message)
-		{
-			this.message = message;
+			string Message { get; }
 		}
 
-		public string Message
+		public interface ICounter
 		{
-			get { return this.message.Message; }
+			int Next { get; }
 		}
+
+		[Export]
+		public class Greeter
+		{
+			private ILogger logger;
+			private IMessage message;
+			private ICounter counter;
+
+			[ImportingConstructor]
+			public Greeter(ILogger logger, IMessage message, ICounter counter)
+			{
+				this.logger = logger;
+				this.message = message;
+				this.counter = counter;
+			}
+
+			public void Greet()
+			{
+				this.logger.Log(string.Format("{0}: {1}", this.counter.Next, this.message.Message));
+			}
+		}
+
 	}
 }

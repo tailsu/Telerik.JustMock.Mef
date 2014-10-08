@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
-using System.Linq.Expressions;
-using Telerik.JustMock.Expectations;
+using System.Linq;
 using Telerik.JustMock.Helpers;
 
 namespace Telerik.JustMock.Mef
 {
 	public class MockExportProvider : ExportProvider
 	{
-		private readonly Dictionary<Type, object> mocks = new Dictionary<Type, object>();
-		private readonly Dictionary<string, Type> importables = new Dictionary<string, Type>();
+		private class Importable
+		{
+			public Type Type;
+			public string ContractName;
+			public object Instance;
+			public Dictionary<string, object> Metadata;
+		}
+
+		private readonly Dictionary<string, List<Importable>> importables = new Dictionary<string, List<Importable>>();
 
 		public T Compose<T>(string contractName = null)
 		{
@@ -21,129 +27,95 @@ namespace Telerik.JustMock.Mef
 			return container.GetExportedValue<T>(contractName);
 		}
 
-		public T Arrange<T>(string contractName = null)
+		public T ImportMock<T>(string contractName = null, IDictionary<string, object> metadata = null)
 		{
 			var type = typeof(T);
+
 			var name = contractName ?? AttributedModelServices.GetContractName(type);
-			importables[name] = type;
-			return this.GetExportedValue<T>(contractName);
-		}
 
-		public FuncExpectation<object> Arrange<TObject>(Expression<Func<TObject, object>> expression)
-		{
-			return this.Arrange(null, expression);
-		}
+			List<Importable> contractImportables;
+			if (!importables.TryGetValue(name, out contractImportables))
+			{
+				contractImportables = new List<Importable>();
+				importables.Add(name, contractImportables);
+			}
 
-		public FuncExpectation<object> Arrange<TObject>(string contractName, Expression<Func<TObject, object>> expression)
-		{
-			return this.Arrange<TObject>(contractName).Arrange(expression);
-		}
+			var importable = contractImportables.FirstOrDefault(imp => imp.Metadata.DictionaryEquals(metadata));
+			if (importable == null)
+			{
+				importable = new Importable { Type = type };
+				if (metadata != null)
+				{
+					importable.Metadata = new Dictionary<string, object>(metadata);
+				}
+				contractImportables.Add(importable);
+				this.GetExportedValues<T>(contractName).ToArray();
+			}
 
-		public ActionExpectation Arrange<TObject>(Expression<Action<TObject>> expression)
-		{
-			return this.Arrange(null, expression);
-		}
-
-		public ActionExpectation Arrange<TObject>(string contractName, Expression<Action<TObject>> expression)
-		{
-			return this.Arrange<TObject>(contractName).Arrange(expression);
+			return (T)importable.Instance;
 		}
 
 		public void AssertAll()
 		{
-			foreach (var mock in mocks.Values)
-			{
-				mock.AssertAll();
-			}
+			ForEachMock(mock => mock.AssertAll());
 		}
 
 		public void Assert()
 		{
-			foreach (var mock in mocks.Values)
-			{
-				mock.Assert();
-			}
-		}
-
-		public void Assert<TService>(Expression<Action<TService>> expression)
-		{
-			this.GetExportedValue<TService>().Assert(expression);
-		}
-
-		public void Assert<TService>(Expression<Func<TService, object>> expression)
-		{
-			this.GetExportedValue<TService>().Assert(expression);
-		}
-
-		public void Assert<TService>()
-		{
-			this.GetExportedValue<TService>().Assert();
-		}
-
-		public void Assert<TService>(Expression<Func<TService, object>> expression, Occurs occurs)
-		{
-			this.GetExportedValue<TService>().Assert(expression, occurs);
-		}
-
-		public void Assert<TService>(Expression<Action<TService>> expression, Occurs occurs)
-		{
-			this.GetExportedValue<TService>().Assert(expression, occurs);
-		}
-
-		public void Assert<TService>(string contractName)
-		{
-			this.GetExportedValue<TService>(contractName).Assert();
-		}
-
-		public void Assert<TService>(string contractName, Expression<Func<TService, object>> expression)
-		{
-			this.GetExportedValue<TService>(contractName).Assert(expression);
-		}
-
-		public void Assert<TService>(string contractName, Expression<Action<TService>> expression)
-		{
-			this.GetExportedValue<TService>(contractName).Assert(expression);
-		}
-
-		public void Assert<TService>(string contractName, Expression<Func<TService, object>> expression, Occurs occurs)
-		{
-			this.GetExportedValue<TService>(contractName).Assert(expression, occurs);
-		}
-
-		public void Assert<TService>(string contractName, Expression<Action<TService>> expression, Occurs occurs)
-		{
-			this.GetExportedValue<TService>(contractName).Assert(expression, occurs);
+			ForEachMock(mock => mock.Assert());
 		}
 
 		protected override IEnumerable<Export> GetExportsCore(ImportDefinition definition, AtomicComposition atomicComposition)
 		{
-			Type importType;
-			if (!importables.TryGetValue(definition.ContractName, out importType))
+			List<Importable> contractImportables;
+			if (!importables.TryGetValue(definition.ContractName, out contractImportables))
 			{
 				yield break;
 			}
 
-			var metadata = new Dictionary<string, object>();
-			metadata.Add("System.ComponentModel.Composition.CreationPolicy", CreationPolicy.Shared);
-			var cbid = definition as ContractBasedImportDefinition;
-			if (cbid != null)
-			{
-				metadata.Add("ExportTypeIdentity", cbid.RequiredTypeIdentity);
-			}
-
 			var mockContract = "Telerik.JustMock.Internal.MefMocks." + definition.ContractName;
-			yield return new Export(new ExportDefinition(mockContract, metadata), () => this.GetMock(importType));
+
+			foreach (var importable in contractImportables)
+			{
+				var metadata = new Dictionary<string, object>();
+				if (importable.Metadata != null)
+				{
+					foreach (var kvp in importable.Metadata)
+					{
+						metadata.Add(kvp.Key, kvp.Value);
+					}
+				}
+
+				metadata["System.ComponentModel.Composition.CreationPolicy"] = CreationPolicy.Shared;
+				var cbid = definition as ContractBasedImportDefinition;
+				if (cbid != null)
+				{
+					metadata["ExportTypeIdentity"] = cbid.RequiredTypeIdentity;
+				}
+
+				yield return new Export(new ExportDefinition(mockContract, metadata), () => GetMock(importable));
+			}
 		}
 
-		private object GetMock(Type type)
+		private static object GetMock(Importable importable)
 		{
-			object value;
-			if (!mocks.TryGetValue(type, out value))
+			if (importable.Instance == null)
 			{
-				value = Mock.Create(type);
-				mocks.Add(type, value);
+				importable.Instance = Mock.Create(importable.Type);
 			}
-			return value;
+			return importable.Instance;
+		}
+
+		private void ForEachMock(Action<object> action)
+		{
+			foreach (var importable in importables.Values.SelectMany(list => list))
+			{
+				var instance = importable.Instance;
+				if (instance != null)
+				{
+					action(instance);
+				}
+			}
 		}
 	}
 }
