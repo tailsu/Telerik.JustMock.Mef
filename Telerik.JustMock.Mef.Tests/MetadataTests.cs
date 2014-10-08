@@ -26,9 +26,9 @@ namespace Telerik.JustMock.Mef.Tests
 		{
 			var container = new MockExportProvider();
 
-			container.ImportMock<IMessage>(metadata: new Dictionary<string, object> { { "Severity", Severity.Warning } })
+			container.ExportMock<IMessage>(metadata: new Dictionary<string, object> { { "Severity", Severity.Warning } })
 				.Arrange(message => message.Message).Returns("Be careful");
-			container.ImportMock<IMessage>(metadata: new Dictionary<string, object> { { "Severity", Severity.Error } })
+			container.ExportMock<IMessage>(metadata: new Dictionary<string, object> { { "Severity", Severity.Error } })
 				.Arrange(message => message.Message).Returns("Failed");
 
 			var printer = container.Compose<MessagePrinter>();

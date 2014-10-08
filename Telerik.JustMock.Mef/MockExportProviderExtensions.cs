@@ -15,7 +15,7 @@ namespace Telerik.JustMock.Mef
 
 		public static FuncExpectation<object> Arrange<TObject>(this MockExportProvider @this, string contractName, Expression<Func<TObject, object>> expression, IDictionary<string, object> metadata = null)
 		{
-			return @this.ImportMock<TObject>(contractName, metadata).Arrange(expression);
+			return @this.ExportMock<TObject>(contractName, metadata).Arrange(expression);
 		}
 
 		public static ActionExpectation Arrange<TObject>(this MockExportProvider @this, Expression<Action<TObject>> expression, IDictionary<string, object> metadata = null)
@@ -25,7 +25,7 @@ namespace Telerik.JustMock.Mef
 
 		public static ActionExpectation Arrange<TObject>(this MockExportProvider @this, string contractName, Expression<Action<TObject>> expression, IDictionary<string, object> metadata = null)
 		{
-			return @this.ImportMock<TObject>(contractName, metadata).Arrange(expression);
+			return @this.ExportMock<TObject>(contractName, metadata).Arrange(expression);
 		}
 
 		public static void Assert<TService>(this MockExportProvider @this, Expression<Action<TService>> expression)

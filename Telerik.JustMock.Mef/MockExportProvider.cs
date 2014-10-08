@@ -27,7 +27,7 @@ namespace Telerik.JustMock.Mef
 			return container.GetExportedValue<T>(contractName);
 		}
 
-		public T ImportMock<T>(string contractName = null, IDictionary<string, object> metadata = null)
+		public T ExportMock<T>(string contractName = null, IDictionary<string, object> metadata = null)
 		{
 			var type = typeof(T);
 
@@ -73,7 +73,7 @@ namespace Telerik.JustMock.Mef
 				yield break;
 			}
 
-			var mockContract = "Telerik.JustMock.Internal.MefMocks." + definition.ContractName;
+			var mockContract = "Telerik.JustMock.DynamicMefMocks." + definition.ContractName;
 
 			foreach (var importable in contractImportables)
 			{

@@ -16,7 +16,7 @@ namespace Telerik.JustMock.Mef.Tests
 			var mocker = new MockingCompositionContainer<Greeter>();
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).DoInstead((string log) => msg = log);
 			mocker.Arrange<IMessage>(message => message.Message).Returns("foo");
-			mocker.ImportMock<ICounter>();
+			mocker.ExportMock<ICounter>();
 			var greeter = mocker.Instance;
 
 			greeter.Greet();
@@ -34,7 +34,7 @@ namespace Telerik.JustMock.Mef.Tests
 			var mocker = new MockExportProvider();
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).DoInstead((string log) => msg = log);
 			mocker.Arrange<IMessage>(message => message.Message).Returns("foo");
-			mocker.ImportMock<ICounter>();
+			mocker.ExportMock<ICounter>();
 			var greeter = mocker.Compose<Greeter>();
 
 			greeter.Greet();
@@ -46,15 +46,15 @@ namespace Telerik.JustMock.Mef.Tests
 		public void ShouldAssertExpectationsOnAllMocks()
 		{
 			var mocker = new MockExportProvider();
-			mocker.ImportMock<IMessage>();
+			mocker.ExportMock<IMessage>();
 			mocker.Arrange<ICounter>(counter => counter.Next).Returns(5);
 			mocker.Arrange<ILogger>(log => log.Log(Arg.AnyString)).MustBeCalled();
 
 			AssertEx.Throws<AssertFailedException>(() => mocker.Assert());
 			AssertEx.Throws<AssertFailedException>(() => mocker.AssertAll());
 			AssertEx.Throws<AssertFailedException>(() => mocker.Assert<ILogger>());
-			mocker.ImportMock<ICounter>().Assert();
-			AssertEx.Throws<AssertFailedException>(() => mocker.ImportMock<ICounter>().AssertAll());
+			mocker.ExportMock<ICounter>().Assert();
+			AssertEx.Throws<AssertFailedException>(() => mocker.ExportMock<ICounter>().AssertAll());
 
 			var greeter = mocker.Compose<Greeter>();
 			greeter.Greet();
@@ -62,8 +62,8 @@ namespace Telerik.JustMock.Mef.Tests
 			mocker.Assert();
 			mocker.AssertAll();
 			mocker.Assert<ILogger>();
-			mocker.ImportMock<ICounter>().Assert();
-			mocker.ImportMock<ICounter>().AssertAll();
+			mocker.ExportMock<ICounter>().Assert();
+			mocker.ExportMock<ICounter>().AssertAll();
 		}
 
 		[TestMethod]
@@ -72,9 +72,9 @@ namespace Telerik.JustMock.Mef.Tests
 			var assemblyCatalog = new AssemblyCatalog(typeof(MefTests).Assembly);
 
 			var mocks = new MockExportProvider();
-			mocks.ImportMock<ILogger>();
-			mocks.ImportMock<IMessage>();
-			mocks.ImportMock<ICounter>();
+			mocks.ExportMock<ILogger>();
+			mocks.ExportMock<IMessage>();
+			mocks.ExportMock<ICounter>();
 
 			var container = new CompositionContainer(assemblyCatalog, mocks);
 			var greeter = container.GetExportedValue<Greeter>();
