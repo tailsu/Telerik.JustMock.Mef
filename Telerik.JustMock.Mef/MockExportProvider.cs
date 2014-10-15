@@ -8,18 +8,33 @@ using Telerik.JustMock.Helpers;
 
 namespace Telerik.JustMock.Mef
 {
+	/// <summary>
+	/// A MEF export provider that can create mocks for importing in place
+	/// of actual exports. You must call Arrange or ExportMock for every import
+	/// that will need to be satisfied.
+	/// </summary>
 	public class MockExportProvider : ExportProvider
 	{
 		private class Importable
 		{
 			public Type Type;
-			public string ContractName;
 			public object Instance;
 			public Dictionary<string, object> Metadata;
 		}
 
 		private readonly Dictionary<string, List<Importable>> importables = new Dictionary<string, List<Importable>>();
 
+		/// <summary>
+		/// Creates a new instance of type T and satisfies all imports on the instance.
+		/// </summary>
+		/// <remarks>
+		/// The type must be marked with an [Export] attribute and the contract name of the export
+		/// must match the contractName argument passed this method.
+		/// You must call Arrange or ExportMock for every import on T.
+		/// </remarks>
+		/// <typeparam name="T">The type of the instance to create and compose.</typeparam>
+		/// <param name="contractName">The contract name of the export.</param>
+		/// <returns>The composed instance.</returns>
 		public T Compose<T>(string contractName = null)
 		{
 			var typeCatalog = new TypeCatalog(typeof(T));
@@ -27,6 +42,20 @@ namespace Telerik.JustMock.Mef
 			return container.GetExportedValue<T>(contractName);
 		}
 
+		/// <summary>
+		/// Exports a mock of type T. The exported mock is then ready for importing.
+		/// </summary>
+		/// <remarks>
+		/// Mock exports are always [Shared], i.e. only a single instance of a mock for a given contract name
+		/// is created and reused during composition. You can create two different mocks of the same type
+		/// if you use different contract names.
+		/// </remarks>
+		/// <typeparam name="T">The type of the mock to export.</typeparam>
+		/// <param name="contractName">The contract name of the export.
+		/// The CreationPolicySystem.ComponentModel.Composition.CreationPolicy metadata cannot be set.</param>
+		/// <param name="metadata">Additional export metadata.</param>
+		/// <returns>The exported mock instance. The returned value may be used
+		/// to further arrange and assert expectations on the mock.</returns>
 		public T ExportMock<T>(string contractName = null, IDictionary<string, object> metadata = null)
 		{
 			var type = typeof(T);
@@ -55,16 +84,28 @@ namespace Telerik.JustMock.Mef
 			return (T)importable.Instance;
 		}
 
+		/// <summary>
+		/// Asserts all explicit and implicit expectations on all mocks exported by this provider.
+		/// </summary>
 		public void AssertAll()
 		{
 			ForEachMock(mock => mock.AssertAll());
 		}
 
+		/// <summary>
+		/// Asserts all explicit expectations on all mocks exported by this provider.
+		/// </summary>
 		public void Assert()
 		{
 			ForEachMock(mock => mock.Assert());
 		}
 
+		/// <summary>
+		/// Entry point into MEF for creating mock exports.
+		/// </summary>
+		/// <param name="definition"></param>
+		/// <param name="atomicComposition"></param>
+		/// <returns></returns>
 		protected override IEnumerable<Export> GetExportsCore(ImportDefinition definition, AtomicComposition atomicComposition)
 		{
 			List<Importable> contractImportables;

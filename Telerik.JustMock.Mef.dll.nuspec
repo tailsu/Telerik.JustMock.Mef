@@ -2,8 +2,8 @@
 <package >
   <metadata>
     <id>JustMock.Mef</id>
-	<title>JustMock.Mef</title>
-    <version>1.1.0</version>
+    <title>JustMock.Mef</title>
+    <version>1.1.1</version>
     <authors>dragnev</authors>
     <owners>dragnev</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
@@ -20,5 +20,6 @@
 
   <files>
     <file src="Telerik.JustMock.Mef\bin\Release\Telerik.JustMock.Mef.dll" target="lib/Net40"/>
+    <file src="Telerik.JustMock.Mef\bin\Release\Telerik.JustMock.Mef.xml" target="lib/Net40"/>
   </files>
 </package>

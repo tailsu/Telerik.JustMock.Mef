@@ -6,76 +6,180 @@ using Telerik.JustMock.Helpers;
 
 namespace Telerik.JustMock.Mef
 {
+	/// <summary>
+	/// Extension methods for <see cref="MockExportProvider"/> for common Arrange and Assert operations.
+	/// </summary>
 	public static class MockExportProviderExtensions
 	{
+		/// <summary>
+		/// Export a mocked type and arrange a method on it.
+		/// </summary>
+		/// <typeparam name="TObject">The type of mock to export.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to arrange.</param>
+		/// <param name="metadata">Optional metadata to identify the export.</param>
+		/// <returns>Fluent interface to further configure the behavior of this arrangement.</returns>
 		public static FuncExpectation<object> Arrange<TObject>(this MockExportProvider @this, Expression<Func<TObject, object>> expression, IDictionary<string, object> metadata = null)
 		{
 			return @this.Arrange(null, expression, metadata);
 		}
 
+		/// <summary>
+		/// Export a mocked type and arrange a method on it.
+		/// </summary>
+		/// <typeparam name="TObject">The type of mock to export.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name of the mock export.</param>
+		/// <param name="expression">The method to arrange.</param>
+		/// <param name="metadata">Optional metadata to identify the export.</param>
+		/// <returns>Fluent interface to further configure the behavior of this arrangement.</returns>
 		public static FuncExpectation<object> Arrange<TObject>(this MockExportProvider @this, string contractName, Expression<Func<TObject, object>> expression, IDictionary<string, object> metadata = null)
 		{
 			return @this.ExportMock<TObject>(contractName, metadata).Arrange(expression);
 		}
 
+		/// <summary>
+		/// Export a mocked type and arrange a method on it.
+		/// </summary>
+		/// <typeparam name="TObject">The type of mock to export.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to arrange.</param>
+		/// <param name="metadata">Optional metadata to identify the export.</param>
+		/// <returns>Fluent interface to further configure the behavior of this arrangement.</returns>
 		public static ActionExpectation Arrange<TObject>(this MockExportProvider @this, Expression<Action<TObject>> expression, IDictionary<string, object> metadata = null)
 		{
 			return @this.Arrange(null, expression, metadata);
 		}
 
+		/// <summary>
+		/// Export a mocked type and arrange a method on it.
+		/// </summary>
+		/// <typeparam name="TObject">The type of mock to export.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name of the mock export.</param>
+		/// <param name="expression">The method to arrange.</param>
+		/// <param name="metadata">Optional metadata to identify the export.</param>
+		/// <returns>Fluent interface to further configure the behavior of this arrangement.</returns>
 		public static ActionExpectation Arrange<TObject>(this MockExportProvider @this, string contractName, Expression<Action<TObject>> expression, IDictionary<string, object> metadata = null)
 		{
 			return @this.ExportMock<TObject>(contractName, metadata).Arrange(expression);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, Expression<Action<TService>> expression)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to assert.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, Expression<Action<TObject>> expression)
 		{
-			@this.GetExportedValue<TService>().Assert(expression);
+			@this.GetExportedValue<TObject>().Assert(expression);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, Expression<Func<TService, object>> expression)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to assert.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, Expression<Func<TObject, object>> expression)
 		{
-			@this.GetExportedValue<TService>().Assert(expression);
+			@this.GetExportedValue<TObject>().Assert(expression);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this)
+		/// <summary>
+		/// Assert an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		public static void Assert<TObject>(this MockExportProvider @this)
 		{
-			@this.GetExportedValue<TService>().Assert();
+			@this.GetExportedValue<TObject>().Assert();
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, Expression<Func<TService, object>> expression, Occurs occurs)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to assert.</param>
+		/// <param name="occurs">Occurrence expectation.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, Expression<Func<TObject, object>> expression, Occurs occurs)
 		{
-			@this.GetExportedValue<TService>().Assert(expression, occurs);
+			@this.GetExportedValue<TObject>().Assert(expression, occurs);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, Expression<Action<TService>> expression, Occurs occurs)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="expression">The method to assert.</param>
+		/// <param name="occurs">Occurrence expectation.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, Expression<Action<TObject>> expression, Occurs occurs)
 		{
-			@this.GetExportedValue<TService>().Assert(expression, occurs);
+			@this.GetExportedValue<TObject>().Assert(expression, occurs);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, string contractName)
+		/// <summary>
+		/// Assert an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name identifying the exported mock.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, string contractName)
 		{
-			@this.GetExportedValue<TService>(contractName).Assert();
+			@this.GetExportedValue<TObject>(contractName).Assert();
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, string contractName, Expression<Func<TService, object>> expression)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name identifying the exported mock.</param>
+		/// <param name="expression">The method to assert.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, string contractName, Expression<Func<TObject, object>> expression)
 		{
-			@this.GetExportedValue<TService>(contractName).Assert(expression);
+			@this.GetExportedValue<TObject>(contractName).Assert(expression);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, string contractName, Expression<Action<TService>> expression)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name identifying the exported mock.</param>
+		/// <param name="expression">The method to assert.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, string contractName, Expression<Action<TObject>> expression)
 		{
-			@this.GetExportedValue<TService>(contractName).Assert(expression);
+			@this.GetExportedValue<TObject>(contractName).Assert(expression);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, string contractName, Expression<Func<TService, object>> expression, Occurs occurs)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name identifying the exported mock.</param>
+		/// <param name="expression">The method to assert.</param>
+		/// <param name="occurs">Occurrence expectation.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, string contractName, Expression<Func<TObject, object>> expression, Occurs occurs)
 		{
-			@this.GetExportedValue<TService>(contractName).Assert(expression, occurs);
+			@this.GetExportedValue<TObject>(contractName).Assert(expression, occurs);
 		}
 
-		public static void Assert<TService>(this MockExportProvider @this, string contractName, Expression<Action<TService>> expression, Occurs occurs)
+		/// <summary>
+		/// Assert a method on an exported mock.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the exported mock.</typeparam>
+		/// <param name="this">The mocking container.</param>
+		/// <param name="contractName">The contract name identifying the exported mock.</param>
+		/// <param name="expression">The method to assert.</param>
+		/// <param name="occurs">Occurrence expectation.</param>
+		public static void Assert<TObject>(this MockExportProvider @this, string contractName, Expression<Action<TObject>> expression, Occurs occurs)
 		{
-			@this.GetExportedValue<TService>(contractName).Assert(expression, occurs);
+			@this.GetExportedValue<TObject>(contractName).Assert(expression, occurs);
 		}
 	}
 }
